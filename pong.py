@@ -69,10 +69,8 @@ class MovingBox(object):
         pygame.draw.rect(screen, self._colour, [self._x, self._y, self._width, self._height], 0)
 
 # Define some colors
-BLACK    = (   0,   0,   0)
-WHITE    = ( 255, 255, 255)
-GREEN    = (   0, 255,   0)
-RED      = ( 255,   0,   0)
+
+WHITE = (255, 255, 255)
 
 pygame.init()
 
@@ -99,8 +97,8 @@ ball.set_attributes(x=100, y=140, width=50, height=50, colour=WHITE, edge_behavi
 
 font = pygame.font.Font(None, 50)
 
-before, now = 0, 0
 left_score, right_score = 0, 0
+x_coord1, x_coord2, y_coord1, y_coord2 = 0, 0, 0, 0
 
 # -------- Main Program Loop -----------
 while not done:
@@ -108,8 +106,6 @@ while not done:
     for event in pygame.event.get(): # User did something
         if event.type == pygame.QUIT: # If user clicked close
             done = True # Flag that we are done so we exit this loop
-
-    # --- Game logic should go here
 
     # --- Drawing code should go here
     # First, clear the screen to white. Don't put other drawing commands
@@ -136,16 +132,11 @@ while not done:
         x_coord1 = int(horiz_axis_pos * 10)
         y_coord1 = int(vert_axis_pos * 10)
 
-
     x_coord2, y_coord2 = 0, 0
     # User pressed down on a key
     if event.type == pygame.KEYDOWN:
     # Figure out if it was an arrow key. If so
     # adjust speed.
-    #     if event.key == pygame.K_LEFT:
-    #         x_coord2 = -10
-    #     if event.key == pygame.K_RIGHT:
-    #         x_coord2 = 10
         if event.key == pygame.K_UP:
             y_coord2 = -10
         if event.key == pygame.K_DOWN:
@@ -153,10 +144,6 @@ while not done:
     # User let up on a key
     if event.type == pygame.KEYUP:
         # If it is an arrow key, reset vector back to zero
-        # if event.key == pygame.K_LEFT:
-        #     x_coord2 = 0
-        # if event.key == pygame.K_RIGHT:
-        #     x_coord2 = 0
         if event.key == pygame.K_UP:
             y_coord2 = 0
         if event.key == pygame.K_DOWN:
