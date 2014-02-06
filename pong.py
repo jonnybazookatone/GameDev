@@ -72,6 +72,7 @@ class MovingBox(object):
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (227, 14, 14)
 
 pygame.init()
 
@@ -80,6 +81,13 @@ size = (700, 500)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Pong")
+background_image = pygame.image.load("pong/Bhaskar_A..jpg").convert()
+screen.blit(background_image, [0,0])
+
+click_sound = pygame.mixer.Sound("pong/click.wav")
+# pygame.mixer.music.load("pong/track.mp3")
+# pygame.mixer.music.play()
+
 
 #Loop until the user clicks the close button.
 done = False
@@ -94,7 +102,7 @@ bat2 = MovingBox()
 bat2.set_attributes(x=660, y=size[1]/2-50, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
 
 ball = MovingBox()
-ball.set_attributes(x=100, y=140, width=50, height=50, colour=WHITE, edge_behaviour=-1, bounds=size, vx=10, vy=10)
+ball.set_attributes(x=100, y=140, width=50, height=50, colour=RED, edge_behaviour=-1, bounds=size, vx=10, vy=10)
 
 font = pygame.font.Font(None, 50)
 
@@ -112,6 +120,7 @@ while not done:
     # First, clear the screen to white. Don't put other drawing commands
     # above this, or they will be erased with this command.
     screen.fill(BLACK)
+    screen.blit(background_image, [190, 0])
 
     # Count the joysticks the computer has
     joystick_count = pygame.joystick.get_count()
@@ -163,6 +172,7 @@ while not done:
     line = pygame.draw.rect(screen, WHITE, [size[0]/2, 0, 2, size[1]], 0)
 
     if ball._x < bat1._width:
+        # click_sound.play()
         right_score += 1
         ball.reset_position(x=600, y=50)
         ball._vx = -1*abs(ball._vx)
@@ -170,6 +180,7 @@ while not done:
         ball.draw(screen)
 
     elif ball._x + ball._width > bat2._x:
+        # click_sound.play()
         left_score += 1
         ball.reset_position(x=50, y=50)
         ball._vx = abs(ball._vx)
