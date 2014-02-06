@@ -88,10 +88,10 @@ done = False
 clock = pygame.time.Clock()
 
 bat1 = MovingBox()
-bat1.set_attributes(x=10, y=size[1]/2, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
+bat1.set_attributes(x=10, y=size[1]/2-50, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
 
 bat2 = MovingBox()
-bat2.set_attributes(x=660, y=size[1]/2, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
+bat2.set_attributes(x=660, y=size[1]/2-50, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
 
 ball = MovingBox()
 ball.set_attributes(x=100, y=140, width=50, height=50, colour=WHITE, edge_behaviour=-1, bounds=size, vx=10, vy=10)
@@ -185,16 +185,11 @@ while not done:
 
         ball.draw(screen)
 
-
-
     text_left = font.render("%d" % left_score, True, WHITE)
     text_right = font.render("%d" % right_score, True, WHITE)
     text_dx = 100
     screen.blit(text_left, [size[0]/2 - text_dx, 0])   # Put the image of the text on the screen
     screen.blit(text_right, [size[0]/2 + text_dx, 0])   # Put the image of the text on the screen
-
-    before = now
-
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
