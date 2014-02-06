@@ -71,6 +71,7 @@ class MovingBox(object):
 # Define some colors
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
 pygame.init()
 
