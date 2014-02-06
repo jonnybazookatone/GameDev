@@ -1,12 +1,13 @@
 """
- Show how to use a sprite backed by a graphic.
+ Pong game.
 
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
+ Uses pygame libraries and followed a guide given by  http://programarcadegames.com/
 
- Explanation video: http://youtu.be/vRB_983kUMc
+ Left bat is controlled by a joystick.
+ Right bat is controlled by the UP and DOWN arrow keys.
+
+ Scoring will continue forever.
+
 """
 
 import pygame
@@ -79,7 +80,7 @@ pygame.init()
 size = (700, 500)
 screen = pygame.display.set_mode(size)
 
-pygame.display.set_caption("My Game")
+pygame.display.set_caption("Pong")
 
 #Loop until the user clicks the close button.
 done = False
