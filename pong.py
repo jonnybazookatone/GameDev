@@ -7,13 +7,9 @@
  Right bat is controlled by the UP and DOWN arrow keys.
 
  Scoring will continue forever.
-
 """
 
 import pygame
-import random
-import sys
-
 
 # Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
@@ -70,13 +66,20 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
             self._vx, self._vy = self.change_position(self._vx, self._vy)
 
-    def setVelocity(self, vx, vy):
+    def set_velocity(self, vx, vy):
         self._vx = vx
         self._vy = vy
+
+    def get_velocity(self):
+        return self._vx, self._vy
 
     def reset_position(self, x, y):
         self.rect.x = x
         self.rect.y = y
+
+    def get_width(self):
+        return self._width
+
 
 class MovingBox(object):
 
@@ -91,6 +94,7 @@ class MovingBox(object):
         self._vx = 0
         self._vy = 0
         self._bounds = [0, 0]
+        self._colour = (0, 0, 0)
 
     def set_attributes(self, x, y, width, height, colour, edge_behaviour, bounds, vx=0, vy=0):
         self._x = x
@@ -175,9 +179,9 @@ x_coord1, x_coord2, y_coord1, y_coord2 = 0, 0, 0, 0
 # -------- Main Program Loop -----------
 while not done:
     # --- Main event loop
-    for event in pygame.event.get(): # User did something
-        if event.type == pygame.QUIT: # If user clicked close
-            done = True # Flag that we are done so we exit this loop
+    for event in pygame.event.get():    # User did something
+        if event.type == pygame.QUIT:   # If user clicked close
+            done = True     # Flag that we are done so we exit this loop
 
     # --- Drawing code should go here
     # First, clear the screen to white. Don't put other drawing commands
@@ -201,11 +205,11 @@ while not done:
     if joystick_count != 0:
         # This gets the position of the axis on the game controller
         # It returns a number between -1.0 and +1.0
-        horiz_axis_pos = my_joystick.get_axis(0)
-        vert_axis_pos = my_joystick.get_axis(1)
+        horizontal_axis_pos = my_joystick.get_axis(0)
+        vertical_axis_pos = my_joystick.get_axis(1)
         # Move x according to the axis. We multiply by 10 to speed up the movement.
-        x_coord1 = int(horiz_axis_pos * 10)
-        y_coord1 = int(vert_axis_pos * 10)
+        x_coord1 = int(horizontal_axis_pos * 10)
+        y_coord1 = int(vertical_axis_pos * 10)
 
     # KEYBOARD INPUT
     # PLAYER 2
@@ -236,27 +240,30 @@ while not done:
     screen.blit(text_left, [size[0]/2 - text_dx, 0])   # Put the image of the text on the screen
     screen.blit(text_right, [size[0]/2 + text_dx, 0])   # Put the image of the text on the screen
 
-    bat1_sprite.setVelocity(x_coord1, y_coord1)
-    bat2_sprite.setVelocity(x_coord2, y_coord2)
+    bat1_sprite.set_velocity(x_coord1, y_coord1)
+    bat2_sprite.set_velocity(x_coord2, y_coord2)
 
     # Check if it hits a bat
     blocks_hit_list = pygame.sprite.spritecollide(ball_sprite, bat_list, False)
     if blocks_hit_list:
-        ball_sprite.setVelocity(-1*(ball_sprite._vx), ball_sprite._vy)
+        vx, vy = ball_sprite.get_velocity()
+        ball_sprite.set_velocity(-1*vx, vy)
 
     # Check for scoring
     for sprite in ball_list:
 
-        if sprite.rect.x < bat1_sprite._width:
+        if sprite.rect.x < bat1_sprite.get_width():
         # click_sound.play()
             right_score += 1
             sprite.reset_position(x=size[0]-50, y=50)
-            sprite.setVelocity(-1*abs(sprite._vx), -1*abs(sprite._vy))
+            vx, vy = sprite.get_velocity()
+            sprite.set_velocity(-1*abs(vx), -1*abs(vy))
 
-        elif sprite.rect.x + sprite._width > bat2_sprite.rect.x+bat2_sprite._width/2.:
+        elif sprite.rect.x + sprite.get_width() > bat2_sprite.rect.x+bat2_sprite.get_width()/2.:
             left_score += 1
             sprite.reset_position(x=50, y=50)
-            sprite.setVelocity(abs(sprite._vx), abs(sprite._vy))
+            vx, vy = sprite.get_velocity()
+            sprite.set_velocity(abs(vx), abs(vy))
 
         else:
             sprite.move()
