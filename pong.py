@@ -7,9 +7,13 @@
  Right bat is controlled by the UP and DOWN arrow keys.
 
  Scoring will continue forever.
+ Can have as many balls as you want by changing the variable: number_of_balls
 """
 
 import pygame
+import random
+
+number_of_balls = 0
 
 # Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
@@ -80,61 +84,6 @@ class MovingBoxSprite(pygame.sprite.Sprite):
     def get_width(self):
         return self._width
 
-
-class MovingBox(object):
-
-    def __init__(self):
-        self._Name = ""
-        self._x = 0
-        self._y = 0
-        self._width = 0
-        self._height = 0
-        self._color = (0, 0, 0)
-        self._edge_behaviour = -1
-        self._vx = 0
-        self._vy = 0
-        self._bounds = [0, 0]
-        self._colour = (0, 0, 0)
-
-    def set_attributes(self, x, y, width, height, colour, edge_behaviour, bounds, vx=0, vy=0):
-        self._x = x
-        self._y = y
-        self._width = width
-        self._height = height
-        self._colour = colour
-        self._edge_behaviour = edge_behaviour
-        self._vx = vx
-        self._vy = vy
-        self._bounds = bounds
-
-    def reset_position(self, x, y):
-        self._x = x
-        self._y = y
-
-    def change_position(self, dx, dy):
-
-        if self._x+dx+self._width >= self._bounds[0]:
-            dx *= self._edge_behaviour
-        elif self._x+dx <= 0:
-            dx = abs(dx*self._edge_behaviour)
-
-        if self._y+dy+self._height >= self._bounds[1]:
-            dy *= self._edge_behaviour
-        elif self._y+dy <= 0:
-            dy = abs(dy*self._edge_behaviour)
-
-        self._x += dx
-        self._y += dy
-
-        return dx, dy
-
-    def draw(self, screen):
-
-        if abs(self._vx) > 0 or abs(self._vy) > 0:
-            self._vx, self._vy = self.change_position(self._vx, self._vy)
-
-        pygame.draw.rect(screen, self._colour, [self._x, self._y, self._width, self._height], 0)
-
 # Define some colors
 
 WHITE = (255, 255, 255)
@@ -161,9 +110,11 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
-ball_sprite = MovingBoxSprite(x=50, y=50, width=50, height=50, colour=RED, vx=10, vy=10, bounds=size)
 ball_list = pygame.sprite.Group()
-ball_list.add(ball_sprite)
+for i in range(0, number_of_balls):
+    y = random.random()*size[1]
+    ball_sprite = MovingBoxSprite(x=60, y=y, width=20, height=20, colour=RED, vx=10, vy=10, bounds=size)
+    ball_list.add(ball_sprite)
 
 bat1_sprite = MovingBoxSprite(x=10, y=size[1]/2-50, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
 bat2_sprite = MovingBoxSprite(x=660, y=size[1]/2-50, width=30, height=100, colour=WHITE, edge_behaviour=0, bounds=size)
@@ -243,27 +194,29 @@ while not done:
     bat1_sprite.set_velocity(x_coord1, y_coord1)
     bat2_sprite.set_velocity(x_coord2, y_coord2)
 
-    # Check if it hits a bat
-    blocks_hit_list = pygame.sprite.spritecollide(ball_sprite, bat_list, False)
-    if blocks_hit_list:
-        vx, vy = ball_sprite.get_velocity()
-        ball_sprite.set_velocity(-1*vx, vy)
-
     # Check for scoring
     for sprite in ball_list:
+        # Check if it hits a bat
+        blocks_hit_list = pygame.sprite.spritecollide(sprite, bat_list, False)
+
+        if blocks_hit_list:
+            vx, vy = sprite.get_velocity()
+            sprite.set_velocity(-1*vx, vy)
 
         if sprite.rect.x < bat1_sprite.get_width():
         # click_sound.play()
             right_score += 1
-            sprite.reset_position(x=size[0]-50, y=50)
             vx, vy = sprite.get_velocity()
             sprite.set_velocity(-1*abs(vx), -1*abs(vy))
+            y = random.random()*size[1]
+            sprite.reset_position(x=600, y=y)
 
-        elif sprite.rect.x + sprite.get_width() > bat2_sprite.rect.x+bat2_sprite.get_width()/2.:
+        elif sprite.rect.x + sprite.get_width() > bat2_sprite.rect.x+10:
             left_score += 1
-            sprite.reset_position(x=50, y=50)
             vx, vy = sprite.get_velocity()
             sprite.set_velocity(abs(vx), abs(vy))
+            y = random.random()*size[1]
+            sprite.reset_position(x=60, y=y)
 
         else:
             sprite.move()
