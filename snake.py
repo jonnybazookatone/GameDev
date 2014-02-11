@@ -14,7 +14,7 @@ import random
 # Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
 
-    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=[0, 0], edge_behaviour=-1):
+    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=[0, 0], edge_behaviour=-1, chain_number=0):
         # Call the parent class (Sprite) constructor
         pygame.sprite.Sprite.__init__(self)
         self._Name = ""
@@ -42,8 +42,9 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        # Below is a class that mimics the behaviour of a sprite, but is most likely overkill and less efficient than the
-        # ones inbuilt in pygame
+        # Snake properties
+        self.chain_number = chain_number
+        self.position_list = []
 
     def change_position(self, dx, dy):
 
@@ -61,6 +62,9 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         self.rect.y += dy
 
         return dx, dy
+
+    def add_move(self, dx, dy, wait):
+    	self.position_list.append([dx, dy, wait])
 
     def move(self):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
@@ -102,8 +106,12 @@ done = False
 clock = pygame.time.Clock()
 
 snake_chain = pygame.sprite.Group()
-snake = MovingBoxSprite(x=60, y=0, width=20, height=20, colour=BLACK, vx=10, vy=10, bounds=size)
-snake_chain.add(snake)
+
+for i in range(0,2):
+	
+	width = 20
+	snake = MovingBoxSprite(x=60-i*width, y=0, width=width, height=20, colour=BLACK, vx=0, vy=0, bounds=size, chain_number=i)
+	snake_chain.add(snake)
 
 font = pygame.font.Font(None, 50)
 
@@ -153,11 +161,16 @@ while not done:
     text = font.render("Snake the Game", True, BLACK)
     screen.blit(text, [size[0]/2, 0])   # Put the image of the text on the screen
 
-    snake.set_velocity(x_coord2, y_coord2)
-
-
     for chain in snake_chain:
-    	chain.move()
+
+		if abs(x_coord2) > 0 and abs(chain.get_velocity()[0]) or abs(y_coord2) > 0 and abs(chain.get_velocity()[1]) > 0:
+			chain.set_velocity(x_coord2, y_coord2)
+		
+		chain.move()
+		
+		#	chain.move()
+		#else:
+		#	x=1
 
     # Draw to the screen
     snake_chain.draw(screen)
