@@ -66,6 +66,13 @@ class MovingBoxSprite(pygame.sprite.Sprite):
     def add_move(self, dx, dy, wait):
     	self.position_list.append([dx, dy, wait])
 
+    def remove_move(self):
+	self.position_list = self.position_list[1:]
+
+    def deduct_move(self):
+	for i in range(self.position_list):
+		self.position_list[i][2] = self.position_list[i][2] - 1
+
     def move(self):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
             self._vx, self._vy = self.change_position(self._vx, self._vy)
@@ -165,9 +172,17 @@ while not done:
 
 		if abs(x_coord2) > 0 and abs(chain.get_velocity()[0]) or abs(y_coord2) > 0 and abs(chain.get_velocity()[1]) > 0:
 			chain.set_velocity(x_coord2, y_coord2)
+			chain.move()
+		else:
+			chain.add_move([x_coord2, y_coord2, self.chain_number])
 		
-		chain.move()
-		
+		if chain.position_list and chain.position_list[0][2] == 0:
+			chain.set_velocity(x_coord2, y_coord)
+			chain.remove_move()
+			chain.move()
+		else:
+			chain.deduct_move()
+
 		#	chain.move()
 		#else:
 		#	x=1
