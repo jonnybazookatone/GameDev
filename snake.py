@@ -67,14 +67,14 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         return dx, dy
 
     def add_move(self, dx, dy, wait):
-    	self.position_list.append([dx, dy, wait])
+        self.position_list.append([dx, dy, wait])
 
     def remove_move(self):
-	self.position_list = self.position_list[1:]
+        self.position_list = self.position_list[1:]
 
     def deduct_move(self):
-	for i in range(len(self.position_list)):
-		self.position_list[i][2] = self.position_list[i][2] - 1
+        for i in range(len(self.position_list)):
+            self.position_list[i][2] = self.position_list[i][2] - 1
 
     def move(self):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
@@ -95,14 +95,17 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         return self._width
 
     def set_infront(self, infront):
-    	self.infront = infront
+        self.infront = infront
 
     def get_infront(self):
-    	return self.infront
+        return self.infront
+
     def set_wait(self, wait):
-    	self.wait = wait
+        self.wait = wait
+
     def get_wait(self):
-    	return self.wait
+        return self.wait
+
 
 # Define some colors
 
@@ -166,11 +169,11 @@ while not done:
             y_coord2 = 1
             x_coord2 = 0
         if event.key == pygame.K_LEFT:
-        	y_coord2 = 0
-        	x_coord2 = -1
+            y_coord2 = 0
+            x_coord2 = -1
         if event.key == pygame.K_RIGHT:
-        	y_coord2 = 0
-        	x_coord2 = 1
+            y_coord2 = 0
+            x_coord2 = 1
     # User let up on a key
     #if event.type == pygame.KEYUP:
         # If it is an arrow key, reset vector back to zero
@@ -189,15 +192,15 @@ while not done:
 
     curr_vx, curr_vy = snake1.get_velocity()
     if (y_coord2 != 0 and curr_vy == 0) or (x_coord2 != 0 and curr_vx == 0):
-		snake1.set_velocity(x_coord2, y_coord2)
-		snake1.set_wait(1)
+        snake1.set_velocity(x_coord2, y_coord2)
+        snake1.set_wait(1)
     else:
-		snake1.set_wait(0)
+        snake1.set_wait(0)
 
     snake1.move()
 
     for chain in snake_chain:
-    	if chain.get_infront():
+        if chain.get_infront():
             infront = chain.get_infront()
             vx, vy = infront.get_velocity()
             wait = infront.get_wait()
@@ -206,13 +209,13 @@ while not done:
     for chain in snake_chain:
         if chain.get_infront():
             
-    	    if chain.position_list[0][2] == 0:
-    	    	chain.set_velocity(chain.position_list[0][0], chain.position_list[0][1])
-    	    	chain.remove_move()
-    	    else:
-    	    	chain.deduct_move()
+            if chain.position_list[0][2] == 0:
+                chain.set_velocity(chain.position_list[0][0], chain.position_list[0][1])
+                chain.remove_move()
+            else:
+                chain.deduct_move()
 
-    		chain.move()
+            chain.move()
 
     # Draw to the screen
     snake_chain.draw(screen)
