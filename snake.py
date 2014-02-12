@@ -48,6 +48,7 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 
         self.infront = None
         self.wait = 0
+        self.number_of_chains = 0
 
     def change_position(self, dx, dy):
 
@@ -73,8 +74,8 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         self.position_list = self.position_list[1:]
 
     def deduct_move(self):
-        for i in range(len(self.position_list)):
-            self.position_list[i][2] = self.position_list[i][2] - 1
+        # for i in range(len(self.position_list)):
+            self.position_list[0][2] = self.position_list[0][2] - 1
 
     def move(self):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
@@ -106,12 +107,17 @@ class MovingBoxSprite(pygame.sprite.Sprite):
     def get_wait(self):
         return self.wait
 
+    def set_move(self):
+        self.set_velocity(self.position_list[0][0], self.position_list[0][1])
+
 
 # Define some colors
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (227, 14, 14)
+GREY = (100, 100, 100)
+BLUE = (0, 0, 255)
 
 pygame.init()
 
@@ -128,20 +134,36 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
+snake = pygame.sprite.Group()
 snake_chain = pygame.sprite.Group()
+eatme_list = pygame.sprite.Group()
+eat_me = False
 
 width = 20
-snake1 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=20, colour=BLACK, vx=1, vy=0, bounds=size, chain_number=0)
-snake2 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=20, colour=BLACK, vx=1, vy=0, bounds=size, chain_number=1)
+start_vx = 1
+snake1 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                         chain_number=0)
+# snake2 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+#                          chain_number=1)
+# snake3 = MovingBoxSprite(x=60-3*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+#                          chain_number=2)
+# snake4 = MovingBoxSprite(x=60-4*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+#                          chain_number=3)
+snake1.set_wait(100)
+# snake2.set_infront(snake1)
+# snake3.set_infront(snake2)
+# snake4.set_infront(snake3)
 
-snake2.set_infront(snake1)
+snake.add(snake1)
+# snake_chain.add(snake2)
+# snake_chain.add(snake3)
+# snake_chain.add(snake4)
 
-snake_chain.add(snake1)
-snake_chain.add(snake2)
-
-font = pygame.font.Font(None, 50)
-
+font = pygame.font.Font(None, 30)
+score = 0
 x_coord2, y_coord2 = 1, 0
+yes = True
+
 
 # -------- Main Program Loop -----------
 while not done:
@@ -163,63 +185,116 @@ while not done:
     # Figure out if it was an arrow key. If so
     # adjust speed.
         if event.key == pygame.K_UP:
-            y_coord2 = -1
+            y_coord2 = -1 * start_vx
             x_coord2 = 0
         if event.key == pygame.K_DOWN:
-            y_coord2 = 1
+            y_coord2 = start_vx
             x_coord2 = 0
         if event.key == pygame.K_LEFT:
             y_coord2 = 0
-            x_coord2 = -1
+            x_coord2 = -1 * start_vx
         if event.key == pygame.K_RIGHT:
             y_coord2 = 0
-            x_coord2 = 1
-    # User let up on a key
-    #if event.type == pygame.KEYUP:
-        # If it is an arrow key, reset vector back to zero
-    #    if event.key == pygame.K_UP:
-    #        y_coord2 = 0
-    #    if event.key == pygame.K_DOWN:
-    #        y_coord2 = 0
-    #    if event.key == pygame.K_LEFT:
-    #    	x_coord2 = 0
-    #    if event.key == pygame.K_RIGHT:
-    #    	x_coord2 = 0
-    
+            x_coord2 = start_vx
+
     # Random title for now
-    text = font.render("Snake the Game", True, BLACK)
-    screen.blit(text, [size[0]/2, 0])   # Put the image of the text on the screen
+    time = int(pygame.time.get_ticks())  # miliseconds
+    time /= 1000
+
+    score_text = font.render("Score: %d" % score, True, BLACK)
+    time_text = font.render("Time: %d seconds" % int(time), True, BLACK)
+    screen.blit(score_text, [500, 0])   # Put the image of the text on the screen
+    screen.blit(time_text, [500, 20])
 
     curr_vx, curr_vy = snake1.get_velocity()
-    if (y_coord2 != 0 and curr_vy == 0) or (x_coord2 != 0 and curr_vx == 0):
+    if ( (y_coord2 != 0 and curr_vx != 0) or (x_coord2 != 0 and curr_vy != 0) ) and snake1.get_wait() > snake1.get_width():
+
         snake1.set_velocity(x_coord2, y_coord2)
-        snake1.set_wait(1)
-    else:
+
+        for chain in snake_chain:
+            vx, vy = snake1.get_velocity()
+
+            # Go further than the snake width?
+            wait = snake1.get_wait()
+            if wait < chain.get_width()*chain.chain_number:
+                chain.add_move(vx, vy, wait-1)
+            else:
+                chain.add_move(vx, vy, snake1.get_width()*chain.chain_number)
+
+            # print("Chain #: %d" % chain.chain_number)
+            # print("Wait: %f" % wait)
+            # print("Length: %f" % (snake1.get_width()*chain.chain_number))
+            # if wait < snake1.get_width() * chain.chain_number:
+            #     wait = snake1.get_width() * chain.chain_number
+            # else:
+            #     wait = snake1.get_width()* chain.chain_number
+
+
+        print(snake1.get_wait())
         snake1.set_wait(0)
 
     snake1.move()
+    snake1.set_wait(snake1.get_wait() + 1)
+    # print("Snake wait: %f" % snake1.get_wait())
 
     for chain in snake_chain:
-        if chain.get_infront():
-            infront = chain.get_infront()
-            vx, vy = infront.get_velocity()
-            wait = infront.get_wait()
-            chain.add_move(vx, vy, wait*chain.get_width()*chain.chain_number)
 
-    for chain in snake_chain:
-        if chain.get_infront():
-            
+        if chain.position_list:
+            # print(chain.chain_number, chain.position_list)
             if chain.position_list[0][2] == 0:
-                chain.set_velocity(chain.position_list[0][0], chain.position_list[0][1])
+                chain.set_move()
                 chain.remove_move()
+                # print(chain.chain_number, chain.position_list)
+
+                # print(chain.position_list[0][2])
             else:
                 chain.deduct_move()
 
-            chain.move()
+        chain.move()
+
+    if not eat_me:
+        X = random.random()*size[0]
+        Y = random.random()*size[1]
+
+        eat_me = MovingBoxSprite(x=X, y=Y, width=width, height=20, colour=RED, vx=0, vy=0, bounds=size)
+
+        eatme_list.add(eat_me)
+
+    did_i_eat_list = pygame.sprite.spritecollide(snake1, eatme_list, True)
+
+    if did_i_eat_list:
+        eat_me = False
+
+        # Make extra chain
+        X_new = snake1.rect.x
+        Y_new = snake1.rect.y
+        VX, VY = snake1.get_velocity()
+
+        NUM = snake1.number_of_chains
+        snake1.number_of_chains = NUM + 1
+
+        if abs(VX) > 0:
+            X_new -= (NUM+1)*width
+        elif abs(VY) > 0:
+            Y_new -= (NUM+1)*width
+
+        new_snake = MovingBoxSprite(x=X_new, y=Y_new, width=width, height=20, colour=BLUE, vx=VX, vy=VY,
+                                 bounds=size, chain_number=NUM+1)
+        snake_chain.add(new_snake)
+        print(new_snake.get_velocity())
+        new_snake.move()
+        yes = False
+        score += 1
+
 
     # Draw to the screen
+    snake.draw(screen)
     snake_chain.draw(screen)
-    
+    eatme_list.draw(screen)
+
+
+
+
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
