@@ -46,6 +46,9 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         self.chain_number = chain_number
         self.position_list = []
 
+        self.infront = None
+        self.wait = 0
+
     def change_position(self, dx, dy):
 
         if self.rect.x+dx+self._width >= self._bounds[0]:
@@ -70,7 +73,7 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 	self.position_list = self.position_list[1:]
 
     def deduct_move(self):
-	for i in range(self.position_list):
+	for i in range(len(self.position_list)):
 		self.position_list[i][2] = self.position_list[i][2] - 1
 
     def move(self):
@@ -90,6 +93,16 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 
     def get_width(self):
         return self._width
+
+    def set_infront(self, infront):
+    	self.infront = infront
+
+    def get_infront(self):
+    	return self.infront
+    def set_wait(self, wait):
+    	self.wait = wait
+    def get_wait(self):
+    	return self.wait
 
 # Define some colors
 
@@ -114,15 +127,18 @@ clock = pygame.time.Clock()
 
 snake_chain = pygame.sprite.Group()
 
-for i in range(0,2):
-	
-	width = 20
-	snake = MovingBoxSprite(x=60-i*width, y=0, width=width, height=20, colour=BLACK, vx=0, vy=0, bounds=size, chain_number=i)
-	snake_chain.add(snake)
+width = 20
+snake1 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=20, colour=BLACK, vx=1, vy=0, bounds=size, chain_number=0)
+snake2 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=20, colour=BLACK, vx=1, vy=0, bounds=size, chain_number=1)
+
+snake2.set_infront(snake1)
+
+snake_chain.add(snake1)
+snake_chain.add(snake2)
 
 font = pygame.font.Font(None, 50)
 
-x_coord2, y_coord2 = 0, 0
+x_coord2, y_coord2 = 1, 0
 
 # -------- Main Program Loop -----------
 while not done:
@@ -139,53 +155,64 @@ while not done:
     # KEYBOARD INPUT
     # PLAYER
     ################
-    x_coord2, y_coord2 = 0, 0
     # User pressed down on a key
     if event.type == pygame.KEYDOWN:
     # Figure out if it was an arrow key. If so
     # adjust speed.
         if event.key == pygame.K_UP:
-            y_coord2 = -10
+            y_coord2 = -1
+            x_coord2 = 0
         if event.key == pygame.K_DOWN:
-            y_coord2 = 10
+            y_coord2 = 1
+            x_coord2 = 0
         if event.key == pygame.K_LEFT:
-        	x_coord2 = -10
+        	y_coord2 = 0
+        	x_coord2 = -1
         if event.key == pygame.K_RIGHT:
-        	x_coord2 = 10
+        	y_coord2 = 0
+        	x_coord2 = 1
     # User let up on a key
-    if event.type == pygame.KEYUP:
+    #if event.type == pygame.KEYUP:
         # If it is an arrow key, reset vector back to zero
-        if event.key == pygame.K_UP:
-            y_coord2 = 0
-        if event.key == pygame.K_DOWN:
-            y_coord2 = 0
-        if event.key == pygame.K_LEFT:
-        	x_coord2 = 0
-        if event.key == pygame.K_RIGHT:
-        	x_coord2 = 0
+    #    if event.key == pygame.K_UP:
+    #        y_coord2 = 0
+    #    if event.key == pygame.K_DOWN:
+    #        y_coord2 = 0
+    #    if event.key == pygame.K_LEFT:
+    #    	x_coord2 = 0
+    #    if event.key == pygame.K_RIGHT:
+    #    	x_coord2 = 0
     
     # Random title for now
     text = font.render("Snake the Game", True, BLACK)
     screen.blit(text, [size[0]/2, 0])   # Put the image of the text on the screen
 
+    curr_vx, curr_vy = snake1.get_velocity()
+    if (y_coord2 != 0 and curr_vy == 0) or (x_coord2 != 0 and curr_vx == 0):
+		snake1.set_velocity(x_coord2, y_coord2)
+		snake1.set_wait(1)
+    else:
+		snake1.set_wait(0)
+
+    snake1.move()
+
     for chain in snake_chain:
+    	if chain.get_infront():
+            infront = chain.get_infront()
+            vx, vy = infront.get_velocity()
+            wait = infront.get_wait()
+            chain.add_move(vx, vy, wait*chain.get_width()*chain.chain_number)
 
-		if abs(x_coord2) > 0 and abs(chain.get_velocity()[0]) or abs(y_coord2) > 0 and abs(chain.get_velocity()[1]) > 0:
-			chain.set_velocity(x_coord2, y_coord2)
-			chain.move()
-		else:
-			chain.add_move([x_coord2, y_coord2, self.chain_number])
-		
-		if chain.position_list and chain.position_list[0][2] == 0:
-			chain.set_velocity(x_coord2, y_coord)
-			chain.remove_move()
-			chain.move()
-		else:
-			chain.deduct_move()
+    for chain in snake_chain:
+        if chain.get_infront():
+            
+    	    if chain.position_list[0][2] == 0:
+    	    	chain.set_velocity(chain.position_list[0][0], chain.position_list[0][1])
+    	    	chain.remove_move()
+    	    else:
+    	    	chain.deduct_move()
 
-		#	chain.move()
-		#else:
-		#	x=1
+    		chain.move()
 
     # Draw to the screen
     snake_chain.draw(screen)
@@ -194,7 +221,7 @@ while not done:
     pygame.display.flip()
 
     # --- Limit to 60 frames per second
-    clock.tick(60)
+    clock.tick(20)
 
 # Close the window and quit.
 # If you forget this line, the program will 'hang'
