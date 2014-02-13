@@ -122,7 +122,7 @@ BLUE = (0, 0, 255)
 pygame.init()
 
 # Set the width and height of the screen [width, height]
-size = (700, 500)
+size = (500, 500)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Snake the Game")
@@ -207,7 +207,7 @@ while not done:
     screen.blit(time_text, [500, 20])
 
     curr_vx, curr_vy = snake1.get_velocity()
-    if ( (y_coord2 != 0 and curr_vx != 0) or (x_coord2 != 0 and curr_vy != 0) ) and snake1.get_wait() > snake1.get_width():
+    if ( (y_coord2 != 0 and curr_vx != 0) or (x_coord2 != 0 and curr_vy != 0) ) and snake1.get_wait():
 
         snake1.set_velocity(x_coord2, y_coord2)
 
@@ -215,11 +215,11 @@ while not done:
             vx, vy = snake1.get_velocity()
 
             # Go further than the snake width?
-            wait = snake1.get_wait()
-            if wait < chain.get_width()*chain.chain_number:
-                chain.add_move(vx, vy, wait-1)
+            steps = snake1.get_wait()
+            if steps < chain.get_width():
+                chain.add_move(vx, vy, (steps-1)*(chain.chain_number-1))
             else:
-                chain.add_move(vx, vy, snake1.get_width()*chain.chain_number)
+                chain.add_move(vx, vy, (snake1.get_width()*(chain.chain_number)))
 
             # print("Chain #: %d" % chain.chain_number)
             # print("Wait: %f" % wait)
@@ -234,13 +234,13 @@ while not done:
         snake1.set_wait(0)
 
     snake1.move()
-    snake1.set_wait(snake1.get_wait() + 1)
+    snake1.set_wait(snake1.get_wait()+1)
     # print("Snake wait: %f" % snake1.get_wait())
 
     for chain in snake_chain:
 
         if chain.position_list:
-            # print(chain.chain_number, chain.position_list)
+            print(chain.chain_number, chain.position_list)
             if chain.position_list[0][2] == 0:
                 chain.set_move()
                 chain.remove_move()
@@ -266,23 +266,41 @@ while not done:
         eat_me = False
 
         # Make extra chain
-        X_new = snake1.rect.x
-        Y_new = snake1.rect.y
-        VX, VY = snake1.get_velocity()
+
+	tmp = snake1
+	for sn in snake_chain:
+		if sn.chain_number > tmp.chain_number:
+			tmp = sn
+
+        X_new = tmp.rect.x
+        Y_new = tmp.rect.y
+        VX, VY = tmp.get_velocity()
 
         NUM = snake1.number_of_chains
         snake1.number_of_chains = NUM + 1
 
-        if abs(VX) > 0:
-            X_new -= (NUM+1)*width
-        elif abs(VY) > 0:
-            Y_new -= (NUM+1)*width
-
-        new_snake = MovingBoxSprite(x=X_new, y=Y_new, width=width, height=20, colour=BLUE, vx=VX, vy=VY,
+	# moving to the right
+        if VX > 0: 
+            X_new -= width
+	# moving to the left
+	elif VX < 0:
+	    X_new += width
+	# moving down
+        elif VY > 0:
+            Y_new -= width
+	# moving up
+	elif VY < 0:
+	    Y_new += width
+        
+	new_snake = MovingBoxSprite(x=X_new, y=Y_new, width=width, height=20, colour=BLUE, vx=VX, vy=VY,
                                  bounds=size, chain_number=NUM+1)
+	#new_snake.add_move(VX, VY, 0)
+	#for i in tmp.position_list:
+	#	print i
+	#	new_snake.position_list.append(i)
         snake_chain.add(new_snake)
         print(new_snake.get_velocity())
-        new_snake.move()
+        #new_snake.move()
         yes = False
         score += 1
 
@@ -298,7 +316,7 @@ while not done:
     pygame.display.flip()
 
     # --- Limit to 60 frames per second
-    clock.tick(1)
+    clock.tick(60)
 
 # Close the window and quit.
 # If you forget this line, the program will 'hang'
