@@ -206,6 +206,8 @@ while not done:
     for chain in snake_chain:
         if chain.get_infront():
             
+            print chain.position_list
+
     	    if chain.position_list[0][2] == 0:
     	    	chain.set_velocity(chain.position_list[0][0], chain.position_list[0][1])
     	    	chain.remove_move()
@@ -221,7 +223,7 @@ while not done:
     pygame.display.flip()
 
     # --- Limit to 60 frames per second
-    clock.tick(20)
+    clock.tick(1)
 
 # Close the window and quit.
 # If you forget this line, the program will 'hang'
