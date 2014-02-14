@@ -5,12 +5,18 @@
 
   Snake is controlled by the LEFT, RIGHT, UP and DOWN arrow keys.
 
-  Scoring will continue forever.
+  Scoring will continue until you hit a wall.
+
+  High scores will be saved in a text file and loaded upon launch of the game.
+
+  Possible things to add/fix:
+    1. GUI to start/end the game
+    2. Eatable boxes can originate from outside the canvas
+    3. Enter name for high score on the screen
 """
 
 import pygame
 import random
-import sys
 
 
 # Lets work on sprites instead of the hack I have used
@@ -154,7 +160,8 @@ try:
     score_file.close()
     high_score = int(score_l)
     print("High score loaded.")
-except:
+
+except IOError:
     high_score = 0
     print("No high score found.")
 
