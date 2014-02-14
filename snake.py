@@ -11,10 +11,11 @@
 import pygame
 import random
 
+
 # Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
 
-    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=[0, 0], edge_behaviour=-1, chain_number=0):
+    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=-1, chain_number=0):
         # Call the parent class (Sprite) constructor
         pygame.sprite.Sprite.__init__(self)
         self._Name = ""
@@ -44,42 +45,36 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 
         # Snake properties
         self.chain_number = chain_number
-        self.position_list = []
-
-        self.infront = None
-        self.wait = 0
         self.number_of_chains = 0
+        self.hit = False
 
     def change_position(self, dx, dy):
 
+        hit = False
+
         if self.rect.x+dx+self._width >= self._bounds[0]:
             dx *= self._edge_behaviour
+            hit = True
         elif self.rect.x+dx <= 0:
             dx = abs(dx*self._edge_behaviour)
+            hit = True
 
         if self.rect.y+dy+self._height >= self._bounds[1]:
             dy *= self._edge_behaviour
+            hit = True
         elif self.rect.y+dy <= 0:
             dy = abs(dy*self._edge_behaviour)
+            hit = True
 
         self.rect.x += dx
         self.rect.y += dy
 
-        return dx, dy
-
-    def add_move(self, dx, dy, wait):
-        self.position_list.append([dx, dy, wait])
-
-    def remove_move(self):
-        self.position_list = self.position_list[1:]
-
-    def deduct_move(self):
-        # for i in range(len(self.position_list)):
-            self.position_list[0][2] = self.position_list[0][2] - 1
+        return dx, dy, hit
 
     def move(self):
+
         if abs(self._vx) > 0 or abs(self._vy) > 0:
-            self._vx, self._vy = self.change_position(self._vx, self._vy)
+            self._vx, self._vy, self.hit = self.change_position(self._vx, self._vy)
 
     def set_velocity(self, vx, vy):
         self._vx = vx
@@ -87,29 +82,6 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 
     def get_velocity(self):
         return self._vx, self._vy
-
-    def reset_position(self, x, y):
-        self.rect.x = x
-        self.rect.y = y
-
-    def get_width(self):
-        return self._width
-
-    def set_infront(self, infront):
-        self.infront = infront
-
-    def get_infront(self):
-        return self.infront
-
-    def set_wait(self, wait):
-        self.wait = wait
-
-    def get_wait(self):
-        return self.wait
-
-    def set_move(self):
-        self.set_velocity(self.position_list[0][0], self.position_list[0][1])
-
 
 # Define some colors
 
@@ -134,36 +106,35 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
+# Some properties of the snake
+width = 15
+start_vx = width
+new_vx, new_vy = start_vx, 0
+pos_list = [[start_vx, 0], [start_vx, 0]]
+
+# Define the initial snake
+snake1 = MovingBoxSprite(x=60, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                         chain_number=0)
+snake2 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                         chain_number=1)
+snake3 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                         chain_number=2)
+
+# Add the sprites to a Sprite group and create the eatable blob Sprite group
 snake = pygame.sprite.Group()
-snake_chain = pygame.sprite.Group()
-eatme_list = pygame.sprite.Group()
+snake.add(snake1)
+snake.add(snake2)
+snake.add(snake3)
+
+eat_me_list = pygame.sprite.Group()
 eat_me = False
 
-width = 20
-start_vx = 1
-snake1 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-                         chain_number=0)
-# snake2 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-#                          chain_number=1)
-# snake3 = MovingBoxSprite(x=60-3*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-#                          chain_number=2)
-# snake4 = MovingBoxSprite(x=60-4*width, y=0, width=width, height=20, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-#                          chain_number=3)
-snake1.set_wait(100)
-# snake2.set_infront(snake1)
-# snake3.set_infront(snake2)
-# snake4.set_infront(snake3)
+# This refers to the other parts of the snake that are not the head
+snake1.number_of_chains = 2
 
-snake.add(snake1)
-# snake_chain.add(snake2)
-# snake_chain.add(snake3)
-# snake_chain.add(snake4)
-
+# Define the fonts for text
 font = pygame.font.Font(None, 30)
 score = 0
-x_coord2, y_coord2 = 1, 0
-yes = True
-
 
 # -------- Main Program Loop -----------
 while not done:
@@ -185,138 +156,107 @@ while not done:
     # Figure out if it was an arrow key. If so
     # adjust speed.
         if event.key == pygame.K_UP:
-            y_coord2 = -1 * start_vx
-            x_coord2 = 0
+            new_vy = -1 * start_vx
+            new_vx = 0
         if event.key == pygame.K_DOWN:
-            y_coord2 = start_vx
-            x_coord2 = 0
+            new_vy = start_vx
+            new_vx = 0
         if event.key == pygame.K_LEFT:
-            y_coord2 = 0
-            x_coord2 = -1 * start_vx
+            new_vy = 0
+            new_vx = -1 * start_vx
         if event.key == pygame.K_RIGHT:
-            y_coord2 = 0
-            x_coord2 = start_vx
+            new_vy = 0
+            new_vx = start_vx
 
-    # Random title for now
-    time = int(pygame.time.get_ticks())  # miliseconds
-    time /= 1000
+    # Show the time that has gone by and write the number of things eaten to the board and the time taken
+    time = int(pygame.time.get_ticks())  # milliseconds
+    time /= 1000    # seconds
 
     score_text = font.render("Score: %d" % score, True, BLACK)
     time_text = font.render("Time: %d seconds" % int(time), True, BLACK)
-    screen.blit(score_text, [500, 0])   # Put the image of the text on the screen
-    screen.blit(time_text, [500, 20])
+    screen.blit(score_text, [size[0]-200, 0])   # Put the image of the text on the screen
+    screen.blit(time_text, [size[0]-200, 20])
 
+    # Set the movement of the head of the snake and append the past movements to a list
     curr_vx, curr_vy = snake1.get_velocity()
-    if ( (y_coord2 != 0 and curr_vx != 0) or (x_coord2 != 0 and curr_vy != 0) ) and snake1.get_wait():
+    pos_list.append([curr_vx, curr_vy])
+    snake1.set_velocity(new_vx, new_vy)
 
-        snake1.set_velocity(x_coord2, y_coord2)
+    # Move each part of the snake using the memory of movements
+    for sn in snake:
+        if sn.chain_number != 0:
+            sn.set_velocity(pos_list[-1*sn.chain_number][0], pos_list[-1*sn.chain_number][1])
 
-        for chain in snake_chain:
-            vx, vy = snake1.get_velocity()
+    # Ensure that the list does not grow in size
+    if len(pos_list) == snake1.number_of_chains+1:
+        pos_list = pos_list[1:]
 
-            # Go further than the snake width?
-            steps = snake1.get_wait()
-            if steps < chain.get_width():
-                chain.add_move(vx, vy, (steps-1)*(chain.chain_number-1))
-            else:
-                chain.add_move(vx, vy, (snake1.get_width()*(chain.chain_number)))
-
-            # print("Chain #: %d" % chain.chain_number)
-            # print("Wait: %f" % wait)
-            # print("Length: %f" % (snake1.get_width()*chain.chain_number))
-            # if wait < snake1.get_width() * chain.chain_number:
-            #     wait = snake1.get_width() * chain.chain_number
-            # else:
-            #     wait = snake1.get_width()* chain.chain_number
-
-
-        print(snake1.get_wait())
-        snake1.set_wait(0)
-
-    snake1.move()
-    snake1.set_wait(snake1.get_wait()+1)
-    # print("Snake wait: %f" % snake1.get_wait())
-
-    for chain in snake_chain:
-
-        if chain.position_list:
-            print(chain.chain_number, chain.position_list)
-            if chain.position_list[0][2] == 0:
-                chain.set_move()
-                chain.remove_move()
-                # print(chain.chain_number, chain.position_list)
-
-                # print(chain.position_list[0][2])
-            else:
-                chain.deduct_move()
-
-        chain.move()
-
+    # Check if there exists already something to eat. If no, then make one that is randomly placed
     if not eat_me:
         X = random.random()*size[0]
         Y = random.random()*size[1]
+        eat_me = MovingBoxSprite(x=X, y=Y, width=width, height=width, colour=RED, vx=0, vy=0, bounds=size)
+        eat_me_list.add(eat_me)
 
-        eat_me = MovingBoxSprite(x=X, y=Y, width=width, height=20, colour=RED, vx=0, vy=0, bounds=size)
+    # Check if the head of the snake sprite has collided with the eatable sprite
+    did_i_eat_list = pygame.sprite.spritecollide(snake1, eat_me_list, True)
 
-        eatme_list.add(eat_me)
-
-    did_i_eat_list = pygame.sprite.spritecollide(snake1, eatme_list, True)
-
+    # Collision
     if did_i_eat_list:
+
+        # Set false so that next tick it generates a new eatable
         eat_me = False
 
-        # Make extra chain
+        # Make extra chain on the snake
+        tmp = snake1
+        # Look for the last chain in the snake
+        for sn in snake:
+            if sn.chain_number > tmp.chain_number:
+                tmp = sn
 
-	tmp = snake1
-	for sn in snake_chain:
-		if sn.chain_number > tmp.chain_number:
-			tmp = sn
-
+        # Calculate its position and trajectory to place it at the right place with respect to the last sprite
         X_new = tmp.rect.x
         Y_new = tmp.rect.y
         VX, VY = tmp.get_velocity()
 
+        # Update the book keeping numbers of the snake
         NUM = snake1.number_of_chains
         snake1.number_of_chains = NUM + 1
 
-	# moving to the right
-        if VX > 0: 
+        # moving to the right
+        if VX > 0:
             X_new -= width
-	# moving to the left
-	elif VX < 0:
-	    X_new += width
-	# moving down
+        # moving to the left
+        elif VX < 0:
+            X_new += width
+        # moving down
         elif VY > 0:
             Y_new -= width
-	# moving up
-	elif VY < 0:
-	    Y_new += width
-        
-	new_snake = MovingBoxSprite(x=X_new, y=Y_new, width=width, height=20, colour=BLUE, vx=VX, vy=VY,
-                                 bounds=size, chain_number=NUM+1)
-	#new_snake.add_move(VX, VY, 0)
-	#for i in tmp.position_list:
-	#	print i
-	#	new_snake.position_list.append(i)
-        snake_chain.add(new_snake)
-        print(new_snake.get_velocity())
-        #new_snake.move()
-        yes = False
+        # moving up
+        elif VY < 0:
+            Y_new += width
+
+        # Generate new snake piece and add to sprite group
+        new_snake = MovingBoxSprite(x=X_new, y=Y_new, width=width, height=width, colour=BLUE, vx=VX, vy=VY,
+                                    bounds=size, chain_number=NUM+1)
+        snake.add(new_snake)
+
+        # Increment the score to show that an eatable occurred
         score += 1
+
+    # Move all the pieces of the snake
+    for sn in snake:
+        sn.move()
 
     # Draw to the screen
     snake.draw(screen)
-    snake_chain.draw(screen)
-    eatme_list.draw(screen)
-
-
-
+    eat_me_list.draw(screen)
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
     # --- Limit to 60 frames per second
-    clock.tick(60)
+    clock.tick(20)
 
 # Close the window and quit.
 # If you forget this line, the program will 'hang'
