@@ -148,7 +148,15 @@ snake1, snake, eat_me, eat_me_list, pos_list, new_vx, new_vy = game_setup(width,
 font = pygame.font.Font(None, 30)
 font_big = pygame.font.Font(None, 40)
 
-high_score = 0
+try:
+    score_file = open("snake_score.txt", "r")
+    score_l = score_file.readline()
+    score_file.close()
+    high_score = int(score_l)
+    print("High score loaded.")
+except:
+    high_score = 0
+    print("No high score found.")
 
 score = 0
 
@@ -295,4 +303,13 @@ while not done:
 # Close the window and quit.
 # If you forget this line, the program will 'hang'
 # on exit if running from IDLE.
+
+try:
+    print("Saved high score.")
+    score_out = open("snake_score.txt", "w")
+    score_out.write("%d" % high_score)
+    score_out.close()
+except:
+    print("Failed to save high score.")
+
 pygame.quit()
