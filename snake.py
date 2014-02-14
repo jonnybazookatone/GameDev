@@ -10,12 +10,13 @@
 
 import pygame
 import random
+import sys
 
 
 # Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
 
-    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=-1, chain_number=0):
+    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=1, chain_number=0):
         # Call the parent class (Sprite) constructor
         pygame.sprite.Sprite.__init__(self)
         self._Name = ""
@@ -76,6 +77,9 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         if abs(self._vx) > 0 or abs(self._vy) > 0:
             self._vx, self._vy, self.hit = self.change_position(self._vx, self._vy)
 
+    def get_hit(self):
+        return self.hit
+
     def set_velocity(self, vx, vy):
         self._vx = vx
         self._vy = vy
@@ -90,6 +94,34 @@ BLACK = (0, 0, 0)
 RED = (227, 14, 14)
 GREY = (100, 100, 100)
 BLUE = (0, 0, 255)
+
+
+def game_setup(width, start_vx):
+
+    # Define the initial snake
+    snake1 = MovingBoxSprite(x=60, y=10, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                             chain_number=0)
+    snake2 = MovingBoxSprite(x=60-1*width, y=10, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                             chain_number=1)
+    snake3 = MovingBoxSprite(x=60-2*width, y=10, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
+                             chain_number=2)
+    # This refers to the other parts of the snake that are not the head
+    snake1.number_of_chains = 2
+
+    snake = pygame.sprite.Group()
+    snake.add(snake1)
+    snake.add(snake2)
+    snake.add(snake3)
+
+    # Add the sprites to a Sprite group and create the eatable blob Sprite group
+    eat_me_list = pygame.sprite.Group()
+    eat_me = False
+
+    pos_list = [[start_vx, 0], [start_vx, 0]]
+
+    new_vx, new_vy = start_vx, 0
+
+    return snake1, snake, eat_me, eat_me_list, pos_list, new_vx, new_vy
 
 pygame.init()
 
@@ -109,31 +141,15 @@ clock = pygame.time.Clock()
 # Some properties of the snake
 width = 15
 start_vx = width
-new_vx, new_vy = start_vx, 0
-pos_list = [[start_vx, 0], [start_vx, 0]]
 
-# Define the initial snake
-snake1 = MovingBoxSprite(x=60, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-                         chain_number=0)
-snake2 = MovingBoxSprite(x=60-1*width, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-                         chain_number=1)
-snake3 = MovingBoxSprite(x=60-2*width, y=0, width=width, height=width, colour=BLUE, vx=start_vx, vy=0, bounds=size,
-                         chain_number=2)
-
-# Add the sprites to a Sprite group and create the eatable blob Sprite group
-snake = pygame.sprite.Group()
-snake.add(snake1)
-snake.add(snake2)
-snake.add(snake3)
-
-eat_me_list = pygame.sprite.Group()
-eat_me = False
-
-# This refers to the other parts of the snake that are not the head
-snake1.number_of_chains = 2
+snake1, snake, eat_me, eat_me_list, pos_list, new_vx, new_vy = game_setup(width, start_vx)
 
 # Define the fonts for text
 font = pygame.font.Font(None, 30)
+font_big = pygame.font.Font(None, 40)
+
+high_score = 0
+
 score = 0
 
 # -------- Main Program Loop -----------
@@ -193,8 +209,8 @@ while not done:
 
     # Check if there exists already something to eat. If no, then make one that is randomly placed
     if not eat_me:
-        X = random.random()*size[0]
-        Y = random.random()*size[1]
+        X = random.random()*(size[0] - width/2.) + width/2.
+        Y = random.random()*(size[1] - width/2.) + width/2.
         eat_me = MovingBoxSprite(x=X, y=Y, width=width, height=width, colour=RED, vx=0, vy=0, bounds=size)
         eat_me_list.add(eat_me)
 
@@ -247,6 +263,24 @@ while not done:
     # Move all the pieces of the snake
     for sn in snake:
         sn.move()
+
+        # Did the snake hit the wall?
+        if sn.get_hit():
+            # If it hits the wall we want to pause the game and reset everything to the beginning status
+            if score > high_score:
+                high_score = score
+
+            text_your_score = font_big.render("Your score: %d, High score: %d" % (score, high_score), True, BLACK)
+            screen.blit(text_your_score, [50., 50.])
+            pygame.display.flip()
+
+            score = 0
+            time = 0
+
+            pygame.time.wait(1000)
+            snake1, snake, eat_me, eat_me_list, pos_list, new_vx, new_vy = game_setup(width, start_vx)
+
+            break
 
     # Draw to the screen
     snake.draw(screen)
