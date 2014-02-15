@@ -1,7 +1,9 @@
 __author__ = 'Jonny Elliott'
 
+from pygame import sprite
 
-class MovingBoxSprite(pygame.sprite.Sprite):
+
+class MovingBoxSprite(sprite.Sprite):
     """
     A sprite class that is essentially a box that can move. It rebounds off of walls. Meant to make life easier
     when drawing a simple square to the canvas.
@@ -9,7 +11,7 @@ class MovingBoxSprite(pygame.sprite.Sprite):
 
     def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=1, chain_number=0):
         # Call the parent class (Sprite) constructor
-        pygame.sprite.Sprite.__init__(self)
+        sprite.Sprite.__init__(self)
         self._Name = ""
         self._width = width
         self._height = height
@@ -76,7 +78,7 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         self._vy = vy
 
     def get_velocity(self):
-        return self._vx, self.
+        return self._vx, self._vy
 
 
 class CanvasProperties(object):

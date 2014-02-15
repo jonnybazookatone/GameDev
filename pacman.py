@@ -33,6 +33,12 @@ font_big = pygame.font.Font(None, 40)
 
 start_vx = 0
 
+CP = CanvasProperties()
+
+
+
+
+
 # -------- Main Program Loop -----------
 while not done:
     # --- Main event loop
@@ -43,8 +49,9 @@ while not done:
     # --- Drawing code should go here
     # First, clear the screen to white. Don't put other drawing commands
     # above this, or they will be erased with this command.
-    screen.fill(CanvasProperties.colours["WHITE"])
-
+    screen.fill(CP.colours["WHITE"])
+    pacman_image = pygame.image.load("pacman/blinky.jpg").convert()
+    screen.blit(pacman_image, [0, 0])
     # KEYBOARD INPUT
     # PLAYER
     ################
@@ -69,9 +76,7 @@ while not done:
     time = int(pygame.time.get_ticks())  # milliseconds
     time /= 1000    # seconds
 
-    score_text = font.render("Score: %d" % score, True, BLACK)
-    time_text = font.render("Time: %d seconds" % int(time), True, BLACK)
-    screen.blit(score_text, [size[0]-200, 0])   # Put the image of the text on the screen
+    time_text = font.render("Time: %d seconds" % int(time), True, CP.colours["BLACK"])
     screen.blit(time_text, [size[0]-200, 20])
 
     # --- Go ahead and update the screen with what we've drawn.
