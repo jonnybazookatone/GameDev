@@ -1,8 +1,11 @@
 __author__ = 'Jonny Elliott'
 
 
-# Lets work on sprites instead of the hack I have used
 class MovingBoxSprite(pygame.sprite.Sprite):
+    """
+    A sprite class that is essentially a box that can move. It rebounds off of walls. Meant to make life easier
+    when drawing a simple square to the canvas.
+    """
 
     def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=1, chain_number=0):
         # Call the parent class (Sprite) constructor
@@ -76,8 +79,13 @@ class MovingBoxSprite(pygame.sprite.Sprite):
         return self._vx, self.
 
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (227, 14, 14)
-GREY = (100, 100, 100)
-BLUE = (0, 0, 255)
+class CanvasProperties(object):
+    def __init__(self):
+
+        self.colours = {
+            "WHITE": (255, 255, 255),
+            "BLACK": (0, 0, 0),
+            "RED": (227, 14, 14),
+            "GREY": (100, 100, 100),
+            "BLUE": (0, 0, 255),
+        }

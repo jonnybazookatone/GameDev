@@ -10,6 +10,7 @@
 """
 
 import pygame
+from sprites import CanvasProperties
 
 pygame.init()
 
@@ -42,7 +43,7 @@ while not done:
     # --- Drawing code should go here
     # First, clear the screen to white. Don't put other drawing commands
     # above this, or they will be erased with this command.
-    screen.fill(WHITE)
+    screen.fill(CanvasProperties.colours["WHITE"])
 
     # KEYBOARD INPUT
     # PLAYER
