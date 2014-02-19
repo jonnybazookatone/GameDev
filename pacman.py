@@ -10,7 +10,7 @@
 """
 
 import pygame
-from sprites import CanvasProperties
+from sprites import CanvasProperties, MovingBoxSprite
 
 pygame.init()
 
@@ -31,13 +31,14 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 30)
 font_big = pygame.font.Font(None, 40)
 
-start_vx = 0
+start_vx, new_vx, new_vy = 10, 0, 0
 
 CP = CanvasProperties()
 
+blinky = MovingBoxSprite(user_image="pacman/blinky.jpg")
 
-
-
+baddy_sprites = pygame.sprite.Group()
+baddy_sprites.add(blinky)
 
 # -------- Main Program Loop -----------
 while not done:
@@ -50,8 +51,8 @@ while not done:
     # First, clear the screen to white. Don't put other drawing commands
     # above this, or they will be erased with this command.
     screen.fill(CP.colours["WHITE"])
-    pacman_image = pygame.image.load("pacman/blinky.jpg").convert()
-    screen.blit(pacman_image, [0, 0])
+    #pacman_image = pygame.image.load("pacman/blinky.jpg").convert()
+    #screen.blit(pacman_image, [0, 0])
     # KEYBOARD INPUT
     # PLAYER
     ################
@@ -61,16 +62,22 @@ while not done:
     # adjust speed.
         if event.key == pygame.K_UP:
             new_vy = -1 * start_vx
-            new_vx = 0
         if event.key == pygame.K_DOWN:
             new_vy = start_vx
-            new_vx = 0
         if event.key == pygame.K_LEFT:
-            new_vy = 0
             new_vx = -1 * start_vx
         if event.key == pygame.K_RIGHT:
-            new_vy = 0
             new_vx = start_vx
+    if event.type == pygame.KEYUP:
+    # adjust speed.
+        if event.key == pygame.K_UP:
+            new_vy = 0
+        if event.key == pygame.K_DOWN:
+            new_vy = 0
+        if event.key == pygame.K_LEFT:
+            new_vx = 0
+        if event.key == pygame.K_RIGHT:
+            new_vx = 0
 
     # Show the time that has gone by and write the number of things eaten to the board and the time taken
     time = int(pygame.time.get_ticks())  # milliseconds
@@ -78,6 +85,9 @@ while not done:
 
     time_text = font.render("Time: %d seconds" % int(time), True, CP.colours["BLACK"])
     screen.blit(time_text, [size[0]-200, 20])
+
+    blinky.change_position(new_vx, new_vy)
+    baddy_sprites.draw(screen)
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
