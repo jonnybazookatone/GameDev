@@ -15,7 +15,7 @@ from sprites import CanvasProperties, MovingBoxSprite
 pygame.init()
 
 # Set the width and height of the screen [width, height]
-size = (500, 500)
+size = (900, 700)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Snake the Game")
@@ -36,6 +36,10 @@ start_vx, new_vx, new_vy = 10, 0, 0
 CP = CanvasProperties()
 
 blinky = MovingBoxSprite(user_image="pacman/blinky.jpg")
+pacman = MovingBoxSprite(user_image="pacman/pacman.jpg")
+
+goody_sprites = pygame.sprite.Group()
+goody_sprites.add(pacman)
 
 baddy_sprites = pygame.sprite.Group()
 baddy_sprites.add(blinky)
@@ -86,8 +90,10 @@ while not done:
     time_text = font.render("Time: %d seconds" % int(time), True, CP.colours["BLACK"])
     screen.blit(time_text, [size[0]-200, 20])
 
-    blinky.change_position(new_vx, new_vy)
-    baddy_sprites.draw(screen)
+    pacman.change_position(new_vx, new_vy)
+
+    goody_sprites.draw(screen)
+    # baddy_sprites.draw(screen)
 
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()

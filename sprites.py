@@ -9,7 +9,8 @@ class MovingBoxSprite(sprite.Sprite):
     when drawing a simple square to the canvas.
     """
 
-    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=1, chain_number=0, user_image=False):
+    def __init__(self, x=0, y=0, width=50, height=50, colour=(0, 0, 0), vx=0, vy=0, bounds=(0, 0), edge_behaviour=1,
+                 chain_number=0, user_image=False):
         # Call the parent class (Sprite) constructor
         sprite.Sprite.__init__(self)
         self._Name = ""
@@ -23,11 +24,11 @@ class MovingBoxSprite(sprite.Sprite):
 
         # Create an image of the block, and fill it with a color.
         # This could also be an image loaded from the disk.
-	if user_image:
-		self.image = image.load(user_image).convert()
-	else:
-	        self.image = Surface([self._width, self._height])
-	        self.image.fill(self._colour)
+        if user_image:
+            self.image = image.load(user_image).convert()
+        else:
+            self.image = Surface([self._width, self._height])
+            self.image.fill(self._colour)
         # Fetch the rectangle object that has the dimensions of the image
         # image.
         # Update the position of this object by setting the values
